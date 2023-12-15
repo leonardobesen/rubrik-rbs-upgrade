@@ -1,7 +1,7 @@
 import rubrik_cdm
-import tqdm
+from tqdm import tqdm
 import view.write_to_csv as write_to_csv
-import user_interface
+import controller.user_interface as user_interface
 
 
 def _get_all_hostnames(rubrik_conn: rubrik_cdm.Connect) -> list[str]:
@@ -10,11 +10,9 @@ def _get_all_hostnames(rubrik_conn: rubrik_cdm.Connect) -> list[str]:
     try:
         params = {}
         params['operating_system_type'] = 'ANY'
-        params['primary_cluster_id'] = 'local'
         params['sort_by'] = 'hostname'
         params['sort_order'] = 'asc'
-        params['snappable_status'] = 'Protectable'
-        hosts = rubrik_conn.get('v1', f'/hosts', params=params)
+        hosts = rubrik_conn.get('v1', f'/host', params=params)
     except:
         print("ERROR: Unable to list hosts")
         exit(1)
@@ -35,18 +33,13 @@ def list_all_host(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], 
     hostnames = _get_all_hostnames(rubrik_conn)
     hosts_infomation = []
 
-    for host in tqdm(hostnames, desc="Quering RBS on hosts"):
+    for host in tqdm(hostnames, desc="Querying RBS on hosts"):
         try:
-            params = {}
-            params['name'] = host,
-            params['username'] = credentials["user"],
-            params['password'] = credentials["password"],
-            params['operation_timeout'] = 600
-            host_info = rubrik_conn.get('v1', '/host/rbs', params=params)
+            host_info = rubrik_conn.get('v1', f'/host/rbs?name={host}&username={credentials["user"]}&password={credentials["password"]}&operation_timeout=600')
             hosts_infomation.append(host_info)
         except:
-            print("ERROR: Unable to list hosts")
-            exit(1)
+            print(f"ERROR: Unable to list host {host}")
+            continue
 
     if REPORT_PATH:
         write_to_csv.create_file(
@@ -58,12 +51,12 @@ def list_all_host(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], 
 def upgrade_to_latest_version(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], hosts: list[dict]):
     hostnames = []
 
-    lastest_version = user_interface.select_latest_version(hosts)
+    lastest_versions = user_interface.select_latest_versions(hosts)
 
     for host in hosts:
-        if host["agentVersion"] == lastest_version:
+        if host["agentVersion"] in lastest_versions:
             continue
-        hostnames.append[host]
+        hostnames.append(host)
 
     _upgrade_rbs(rubrik_conn, credentials, hostnames)
 

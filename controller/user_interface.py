@@ -1,4 +1,4 @@
-import getpass
+from getpass import getpass
 
 
 def select_cluster(config):
@@ -20,7 +20,7 @@ def select_cluster(config):
 def get_user_credentials():
     print("Please provide the Rubrik Cluster's admin credentials")
     user = input("Enter admin username: ")
-    password = getpass.getpass("Enter admin password: ")
+    password = getpass("Enter admin password: ")
 
     return {
         'user': user,
@@ -45,7 +45,7 @@ def choose_action() -> int:
             print("Invalid input. Please enter a number.")
 
 
-def select_latest_version(hosts: list[dict]) -> str:
+def select_latest_versions(hosts: list[dict]) -> list[str]:
     versions = set()
 
     for host in hosts:
@@ -57,13 +57,18 @@ def select_latest_version(hosts: list[dict]) -> str:
     for i, version in enumerate(sorted_versions, start=1):
         print(f"{i}. {version}")
 
+    selected_versions = []
     while True:
         try:
-            choice = int(
-                input("Enter the number corresponding to your choice: "))
-            if 1 <= choice <= len(sorted_versions):
-                return sorted_versions[choice - 1]
+            choice = input("Enter the number(s) corresponding to your choice(s), separated by commas (e.g., 1,2,3): ")
+            choices = [int(c.strip()) for c in choice.split(',')]
+
+            if all(1 <= c <= len(sorted_versions) for c in choices):
+                selected_versions = [sorted_versions[c - 1] for c in choices]
+                break
             else:
-                print("Invalid choice. Please enter a valid number.")
+                print("Invalid choice. Please enter valid numbers separated by commas.")
         except ValueError:
-            print("Invalid input. Please enter a number.")
+            print("Invalid input. Please enter numbers separated by commas.")
+
+    return selected_versions

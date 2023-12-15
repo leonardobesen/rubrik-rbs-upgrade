@@ -11,7 +11,7 @@ def create_file(rubrik_conn: rubrik_cdm.Connect, REPORT_PATH: str, data: list[di
     cluster = rubrik_conn.get('internal', '/cluster/me/name')
 
     # Set path and file information
-    file_name = f'Rubrik_{cluster}_RBS_versions_{now}.xlsx'
+    file_name = f'Rubrik_{cluster}_RBS_versions_{now}.csv'
 
     report_name = os.path.join(REPORT_PATH, file_name)
 
