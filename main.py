@@ -3,6 +3,7 @@ import connection.connect as connect
 import configuration.config as config
 import controller.user_interface as user_interface
 import controller.operations as operation
+import pandas
 
 # Global variables
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +29,11 @@ if __name__ == '__main__':
     elif action_choice == 2:
         print("Perform Upgrade to RBS version")
         hosts = operation.list_all_host(rubrik_conn, credentials, REPORT_PATH)
+        operation.upgrade_to_latest_version(rubrik_conn, credentials, hosts)
+    elif action_choice == 3:
+        print("Perform Upgrade to RBS version using CSV file")
+        file_name = input("Type file name from reports folders: ")
+        hosts = operation.list_all_host_from_csv(REPORT_PATH, file_name)
         operation.upgrade_to_latest_version(rubrik_conn, credentials, hosts)
 
     print("Process ended successfully")

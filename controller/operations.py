@@ -2,6 +2,8 @@ import rubrik_cdm
 from tqdm import tqdm
 import view.write_to_csv as write_to_csv
 import controller.user_interface as user_interface
+import pandas as pd
+import os
 
 
 def _get_all_hostnames(rubrik_conn: rubrik_cdm.Connect) -> list[str]:
@@ -35,7 +37,8 @@ def list_all_host(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], 
 
     for host in tqdm(hostnames, desc="Querying RBS on hosts"):
         try:
-            host_info = rubrik_conn.get('v1', f'/host/rbs?name={host}&username={credentials["user"]}&password={credentials["password"]}&operation_timeout=600')
+            host_info = rubrik_conn.get(
+                'v1', f'/host/rbs?name={host}&username={credentials["user"]}&password={credentials["password"]}&operation_timeout=600')
             hosts_infomation.append(host_info)
         except:
             print(f"ERROR: Unable to list host {host}")
@@ -48,15 +51,31 @@ def list_all_host(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], 
     return hosts_infomation
 
 
-def upgrade_to_latest_version(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], hosts: list[dict]):
+def list_all_host_from_csv(REPORT_PATH: str, file_name: str) -> list[dict]:
+    file_path = os.path.join(REPORT_PATH, file_name)
+    hosts_infomation = pd.read_csv(file_path, encoding='utf-8', dtype=str)
+
+    return hosts_infomation
+
+
+def upgrade_to_latest_version(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], hosts: list[dict] | pd.DataFrame):
     hostnames = []
 
-    lastest_versions = user_interface.select_latest_versions(hosts)
+    latest_versions = user_interface.select_latest_versions(hosts)
 
-    for host in hosts:
-        if host["agentVersion"] in lastest_versions:
-            continue
-        hostnames.append(host["name"])
+    if isinstance(hosts, pd.DataFrame):
+        for index, host in hosts.iterrows():
+            if host["agentVersion"] in latest_versions:
+                continue
+            hostnames.append(host["name"])
+    elif isinstance(hosts, list):
+        for host in hosts:
+            if host["agentVersion"] in latest_versions:
+                continue
+            hostnames.append(host["name"])
+    else:
+        raise ValueError(
+            "Unsupported type for 'hosts'. It should be a DataFrame or a list of dictionaries.")
 
     _upgrade_rbs(rubrik_conn, credentials, hostnames)
 

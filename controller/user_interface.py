@@ -1,4 +1,5 @@
 from getpass import getpass
+import pandas as pd
 
 
 def select_cluster(config):
@@ -32,24 +33,29 @@ def choose_action() -> int:
     print("Choose an action:")
     print("1. Get List of RBS version for clients")
     print("2. Upgrade RBS version")
+    print("3. Upgrade RBS version from csv file")
 
     while True:
         try:
             choice = int(
                 input("Enter the number corresponding to your choice: "))
-            if choice in [1, 2]:
+            if choice in [1, 2, 3]:
                 return choice
             else:
-                print("Invalid choice. Please enter 1 or 2.")
+                print("Invalid choice. Please enter 1, 2 or 3.")
         except ValueError:
             print("Invalid input. Please enter a number.")
 
 
-def select_latest_versions(hosts: list[dict]) -> list[str]:
+def select_latest_versions(hosts: list[dict] | pd.DataFrame) -> list[str]:
     versions = set()
 
-    for host in hosts:
-        versions.add(host["agentVersion"])
+    if isinstance(hosts, pd.DataFrame):
+        for index, host in hosts.iterrows():
+            versions.add(host["agentVersion"])
+    elif isinstance(hosts, list):
+        for host in hosts:
+            versions.add(host["agentVersion"])
 
     sorted_versions = sorted(versions, reverse=True)
 
@@ -60,7 +66,8 @@ def select_latest_versions(hosts: list[dict]) -> list[str]:
     selected_versions = []
     while True:
         try:
-            choice = input("Enter the number(s) corresponding to your choice(s), separated by commas (e.g., 1,2,3): ")
+            choice = input(
+                "Enter the number(s) corresponding to your choice(s), separated by commas (e.g., 1,2,3): ")
             choices = [int(c.strip()) for c in choice.split(',')]
 
             if all(1 <= c <= len(sorted_versions) for c in choices):
