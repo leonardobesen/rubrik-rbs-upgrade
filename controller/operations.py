@@ -56,7 +56,7 @@ def upgrade_to_latest_version(rubrik_conn: rubrik_cdm.Connect, credentials: dict
     for host in hosts:
         if host["agentVersion"] in lastest_versions:
             continue
-        hostnames.append(host)
+        hostnames.append(host["name"])
 
     _upgrade_rbs(rubrik_conn, credentials, hostnames)
 
