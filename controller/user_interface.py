@@ -59,7 +59,7 @@ def select_latest_versions(hosts: list[dict] | pd.DataFrame) -> list[str]:
 
     sorted_versions = sorted(versions, reverse=True)
 
-    print("Choose the LATEST RBS version")
+    print("Choose the LATEST RBS versions:")
     for i, version in enumerate(sorted_versions, start=1):
         print(f"{i}. {version}")
 
