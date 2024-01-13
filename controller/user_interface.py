@@ -47,7 +47,7 @@ def choose_action() -> int:
             print("Invalid input. Please enter a number.")
 
 
-def select_latest_versions(hosts: list[dict] | pd.DataFrame) -> list[str]:
+def select_latest_versions(hosts: list[dict] or pd.DataFrame) -> list[str]:
     versions = set()
 
     if isinstance(hosts, pd.DataFrame):

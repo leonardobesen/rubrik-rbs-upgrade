@@ -58,7 +58,7 @@ def list_all_host_from_csv(REPORT_PATH: str, file_name: str) -> list[dict]:
     return hosts_infomation
 
 
-def upgrade_to_latest_version(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], hosts: list[dict] | pd.DataFrame):
+def upgrade_to_latest_version(rubrik_conn: rubrik_cdm.Connect, credentials: dict[str, str], hosts: list[dict] or pd.DataFrame):
     hostnames = []
 
     latest_versions = user_interface.select_latest_versions(hosts)
